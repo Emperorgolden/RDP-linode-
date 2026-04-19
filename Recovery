@@ -23,8 +23,8 @@ read -p "Masukkan password untuk akun Administrator (minimal 12 karakter): " PAS
 IP4=$(curl -4 -s icanhazip.com)
 GW=$(ip route | awk '/default/ { print $3 }')
 
-DISK=$(lsblk -ndo NAME,SIZE | sort -k2 -h | tail -n1 | awk '{print $1}')
-DISK="/dev/$DISK"
+ROOTDISK=$(df / | tail -1 | awk '{print $1}' | sed 's/[0-9]*$//')
+DISK="$ROOTDISK"
 
 cat >/tmp/net.bat<<EOF
 @ECHO OFF
@@ -74,7 +74,10 @@ dd if=win of=$DISK bs=4M status=progress
 
 sync
 
+sleep 5
+
 PART=$(lsblk -ln $DISK | awk 'NR==2{print $1}')
+
 mount.ntfs-3g /dev/$PART /mnt || exit 1
 
 cd "/mnt/ProgramData/Microsoft/Windows/Start Menu/Programs/" || exit
